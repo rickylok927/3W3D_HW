@@ -1,0 +1,137 @@
+<html>
+
+  <head>
+    <style>
+      body.size {
+        width: 1000px;
+        height: 1000px;
+      }
+
+    </style>
+  </head>
+
+  <body class='size'>
+    <div style="float:left;
+        background-color: #ffecb8;
+        border: 2px solid black;
+        border-radius: 80px;
+        margin:20px;
+        width:35%;
+        height:35%;
+        padding: 50px;">
+      <font size="10">
+        V
+        <hr>
+        x
+        <input type="text" id="Vx" style="height:10%">
+        <br>
+        y
+        <input type="text" id="Vy" style="height:10%">
+        <br>
+        z
+        <input type="text" id="Vz" style="height:10%">
+      </font>
+    </div>
+
+    <div style="float:right;
+        background-color: #ffecb8;
+        border: 2px solid black;
+        border-radius: 80px;
+        margin:20px;
+        width:35%;
+        height:85%;
+        padding: 50px;">
+      <button id='calc' style="width:50%;height:5%;margin-left:25%">
+        <font size='5'>
+          Calculate
+        </font>
+      </button>
+      <br><br>
+      <font size="6">
+        inner-product
+        <hr>
+        V ・ W
+        <input type="text" id="D" style="height:4%">
+        <br><br><br><br><br><br><br><br><br>
+        V ⨉ W(vertor product)
+        <hr>
+        x
+        <input type="text" id="Cx" style="height:4%">
+        <br><br>
+        y
+        <input type="text" id="Cy" style="height:4%">
+        <br><br>
+        z
+        <input type="text" id="Cz" style="height:4%">
+      </font>
+    </div>
+
+
+    <div style="float:left;
+        background-color: #ffecb8;
+        border: 2px solid black;
+        border-radius: 80px;
+        margin:20px;
+        width:35%;
+        height:35%;
+        padding: 50px;">
+      <font size="10">
+        W
+        <hr>
+        x
+        <input type="text" id="Wx" style="height:10%">
+        <br>
+        y
+        <input type="text" id="Wy" style="height:10%">
+        <br>
+        z
+        <input type="text" id="Wz" style="height:10%">
+      </font>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://threejs.org/build/three.min.js"></script>
+
+    <script>
+      var Vx, Vy, Vz;
+      var Wx, Wy, Wz;
+
+      $('#calc').click(function() {
+        var V = new THREE.Vector3(Vx, Vy, Vz);
+        var W = new THREE.Vector3(Wx, Wy, Wz);
+        $('#D').val(V.clone().dot(W));
+
+        $('#Cx').val(V.clone().cross(W).x);
+        $('#Cy').val(V.clone().cross(W).y);
+        $('#Cz').val(V.clone().cross(W).z);
+      });
+
+      $('#Vx').change(function() {
+        Vx = $(this).val();
+      });
+
+      $("#Vy").change(function() {
+        Vy = $(this).val();
+      });
+
+      $("#Vz").change(function() {
+        Vz = $(this).val();
+      });
+
+      $("#Wx").change(function() {
+        Wx = $(this).val();
+      });
+
+      $("#Wy").change(function() {
+        Wy = $(this).val();
+      });
+
+      $("#Wz").change(function() {
+        Wz = $(this).val();
+      });
+
+    </script>
+  </body>
+
+</html>

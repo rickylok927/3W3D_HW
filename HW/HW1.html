@@ -1,0 +1,161 @@
+<html>
+
+  <head>
+
+    <title>Xmas Lights</title>
+    <style>
+      .tree {
+        position: relative;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+      }
+
+    </style>
+  </head>
+
+  <body style="width:1000px;height:1000px">
+    <div id='bkgd' style="position:absolute;  width:60vw; height: 60vh;">
+
+      <button id='button'>
+        <font size='5'>
+          Power
+        </font>
+      </button>
+
+
+      <button id='mode'>
+        <font size='5'>
+          Mode
+        </font>
+      </button>
+      <center><img src="https://i.pinimg.com/564x/3a/da/fc/3adafc4a4c372564cf69fb7ef8638e0e.jpg" class="tree">
+      </center>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <script>
+      var on = false;
+      var modeChange = false;
+
+      $('#button').click(function() {
+        on = !on;
+
+        lamps.forEach(function(item) {
+          item.startBlink();
+        });
+      });
+
+      $('#mode').click(function() {
+        modeChange = !modeChange;
+      });
+
+      class Light {
+        constructor(name) {
+          this.name = name + Light.id++;
+          this.status = false;
+
+          let el = document.createElement('div');
+          el.id = this.name;
+
+          let bkgd = document.getElementById('bkgd');
+          bkgd.appendChild(el);
+          el.setAttribute("style", `position:absolute;width:20px;height:20px;border-radius:50px;z-index:1; background-color: hsl(0, 0%, 50%); `);
+          el.style.left = this.left * 100 + '%';
+          el.style.top = this.top * 100 + '%';
+        }
+
+        switch () {
+          this.status = !this.status;
+
+          if (on) {
+            if (modeChange)
+              setTimeout(() => {
+                this.switch();
+              }, (Math.floor(Math.random() * 2000) + 1));
+            else
+              setTimeout(() => {
+                this.switch();
+              }, 500);
+          } else {
+            $('#' + this.name).css('backgroundColor', `hsl(0,0%,50%)`);
+            return;
+          }
+
+          if (this.status) {
+            $('#' + this.name).css('backgroundColor', `hsl(${Math.random() * 360},90%,80%)`);
+          } else {
+            $('#' + this.name).css('backgroundColor', `hsl(${Math.random() * 360},90%,82%)`);
+          }
+        }
+
+
+        startBlink() {
+          var that = this;
+
+          setTimeout(() => {
+            this.switch();
+          }, 1000);
+
+
+        }
+
+      }
+
+      Light.id = 0; // class variable
+      lamps = [];
+
+      for (let i = 0; i < 10; i++) {
+        let ll = new Light('light');
+        lamps.push(ll);
+      }
+
+      $('#light0').css({
+        "top": "30%",
+        "left": "50%"
+      });
+      $('#light1').css({
+        "top": "50%",
+        "left": "47%"
+      });
+      $('#light2').css({
+        "top": "50%",
+        "left": "53%"
+      });
+      $('#light3').css({
+        "top": "70%",
+        "left": "44%"
+      });
+      $('#light4').css({
+        "top": "70%",
+        "left": "50%"
+      });
+      $('#light5').css({
+        "top": "70%",
+        "left": "56%"
+      });
+      $('#light6').css({
+        "top": "90%",
+        "left": "41%"
+      });
+      $('#light7').css({
+        "top": "90%",
+        "left": "47%"
+      });
+      $('#light8').css({
+        "top": "90%",
+        "left": "53%"
+      });
+      $('#light9').css({
+        "top": "90%",
+        "left": "59%"
+      });
+
+    </script>
+
+
+  </body>
+
+</html>

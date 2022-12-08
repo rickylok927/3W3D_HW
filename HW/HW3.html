@@ -1,0 +1,403 @@
+<html>
+
+  <head>
+    <style>
+      #button {
+        position: absolute;
+        top: 10%;
+        width: 100%;
+        text-align: center;
+      }
+
+      #view_point {
+        position: absolute;
+        top: 10%;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <center>
+      <a href="https://i.imgur.com/tZSXMxr.png" target='_blank'>Floor Plane</a>
+    </center>
+    <div id='button'>
+      <button id='switchbt'>
+        close
+      </button>
+      <br>
+      <input type="range" max='120' min='30' id='lightness'>
+    </div>
+    <div id='view_point'>
+      <select id='view'>
+        <option value='default'>default</option>
+        <option value='view1'>mainHall</option>
+        <option value='view2'>room1</option>
+        <option value='view3'>room2</option>
+        <option value='view4'>room3</option>
+      </select>
+
+    </div>
+    <script src="https://threejs.org/build/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+    </script>
+    <script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <script>
+      var renderer, scene, camera;
+      var viewPointCamera;
+      var lightStatus = false;
+      var pointLight;
+      var viewPoint = 'default';
+      var spotLightGroup = new THREE.Group();
+      var lightness;
+      var lamps = [];
+
+      class Light {
+        constructor(x, y, z, target) {
+          this.spotLight = new THREE.SpotLight(0xffffff, 1.2, 30, Math.PI / 10, 0.974);
+          this.spotLight.position.set(x, y, z);
+          this.spotLight.target = target;
+
+          var lampGroup = new THREE.Group();
+          var lamp = new THREE.Mesh(new THREE.CylinderGeometry(2, 1, 4, 16), new THREE.MeshLambertMaterial({
+            color: 'white'
+          }));
+          lamp.rotation.x = Math.PI / 2;
+          //lamp.position.set (0,0,30);
+          lampGroup.add(lamp);
+          scene.add(lampGroup);
+          lampGroup.position.copy(this.spotLight.position);
+          lampGroup.lookAt(target.position);
+          /*this.lightModel = new THREE.Mesh(new THREE.CylinderGeometry(1, 2, 5, 16), new THREE.MeshLambertMaterial({
+            color: 'white'
+          }));
+          this.lightModel.position.set(x, y, z);
+          this.lightModel.lookAt(target.position);
+          lamps.forEach(function() {
+            this.lightModel.rotation.x = Math.PI / 2;
+          });
+
+          scene.add(this.lightModel);*/
+          scene.add(this.spotLight);
+        }
+
+        change(n) {
+          this.spotLight.intensity = n;
+        }
+
+      }
+
+      init();
+      animate();
+
+      function init() {
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(width, height);
+        renderer.setClearColor('grey');
+        document.body.appendChild(renderer.domElement);
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
+        camera.position.set(-50, 200, 0);
+
+        let controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+        viewPointCamera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
+        scene.add(viewPointCamera);
+
+        let grid = new THREE.GridHelper(300, 20, 'red', 'white');
+        //scene.add(grid);
+
+
+        let axes = new THREE.AxesHelper(10);
+        //scene.add(axes);
+
+        var woodTex = new THREE.TextureLoader().load("https://i.imgur.com/DrvlmNW.jpg?1");
+        woodTex.wrapS = THREE.RepeatWrapping;
+        woodTex.wrapT = THREE.RepeatWrapping;
+        woodTex.repeat.set(40, 100);
+        var mt = new THREE.MeshBasicMaterial({
+          map: woodTex
+        });
+        var plane = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), mt);
+        plane.rotation.x = -Math.PI / 2;
+        scene.add(plane);
+
+        var light = new THREE.AmbientLight(0xaaaaaa);
+        scene.add(light);
+
+        pointLight = new THREE.PointLight(0xbbbbbb, 1);
+        pointLight.position.set(0, 200, 0);
+        // scene.add(pointLight);
+
+        gallery();
+      }
+
+      function animate() {
+
+        spotLightHelper.update();
+
+        if (viewPoint === 'default') {
+          renderer.render(scene, camera);
+        } else {
+          if (viewPoint === 'view1') {
+            viewPointCamera.position.set(100, 10, 0);
+            viewPointCamera.lookAt(0, 17, 0);
+          } else if (viewPoint === 'view2') {
+            viewPointCamera.position.set(-10, 10, -30);
+            viewPointCamera.lookAt(20, 17, -80);
+          } else if (viewPoint === 'view3') {
+            viewPointCamera.position.set(-35, 10, 10);
+            viewPointCamera.lookAt(-50, 17, 70);
+          } else {
+            viewPointCamera.position.set(-35, 10, -25);
+            viewPointCamera.lookAt(-120, 17, 0);
+          }
+
+          renderer.render(scene, viewPointCamera);
+        }
+
+        requestAnimationFrame(animate);
+
+      }
+
+      function gallery() {
+        var mt = new THREE.MeshLambertMaterial({
+          color: 0xe3e3e3,
+        });
+
+        /*  var human = new THREE.Mesh(new THREE.BoxGeometry(3, 17, 2), mt);
+          scene.add(human);
+          human.position.set(20, 8.5, 0);
+        */
+        var statueBase = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 10), mt);
+        var statue = new THREE.Mesh(new THREE.BoxGeometry(5, 20, 5), mt);
+        statue.position.y = 15;
+        statueBase.position.y = 2.5;
+
+        var wall1 = new THREE.Mesh(new THREE.BoxGeometry(50, 30, 1), mt);
+        wall1.position.set(0, 15, 25);
+        var wall2 = wall1.clone();
+        wall2.position.set(0, 15, -25);
+        var wall3 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 30), mt);
+        wall3.position.set(55, 15, 40);
+        var wall4 = new THREE.Mesh(new THREE.BoxGeometry(20, 30, 1), mt);
+        wall4.position.set(65, 15, 25);
+        var wall5 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 10), mt);
+        wall5.position.set(75, 15, 20);
+        var wall6 = new THREE.Mesh(new THREE.BoxGeometry(10, 30, 1), mt);
+        wall6.position.set(80, 15, 15);
+        var wall7 = wall6.clone();
+        wall7.position.set(80, 15, -15);
+        var wall8 = wall5.clone();
+        wall8.position.set(75, 15, -20);
+        var wall9 = wall4.clone();
+        wall9.position.set(65, 15, -25);
+        var wall10 = wall3.clone();
+        wall10.position.set(55, 15, -40);
+        var wall11 = new THREE.Mesh(new THREE.BoxGeometry(90, 30, 1), mt);
+        wall11.position.set(10, 15, 55);
+        var wall13 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 30), mt);
+        wall13.position.set(-35, 15, 70);
+        var wall14 = new THREE.Mesh(new THREE.BoxGeometry(40, 30, 1), mt);
+        wall14.position.set(-55, 15, 85);
+        var wall15 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 50), mt);
+        wall15.position.set(-75, 15, 60);
+        var wall16 = new THREE.Mesh(new THREE.BoxGeometry(20, 30, 1), mt);
+        wall16.position.set(-65, 15, 35);
+        var wall17 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 40), mt);
+        wall17.position.set(-55, 15, 15);
+        var wall18 = new THREE.Mesh(new THREE.BoxGeometry(10, 30, 1), mt);
+        wall18.position.set(-60, 15, -5);
+        var wall19 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 30), mt);
+        wall19.position.set(-65, 15, 10);
+        var wall20 = new THREE.Mesh(new THREE.BoxGeometry(60, 30, 1), mt);
+        wall20.position.set(-95, 15, 25);
+        var wall21 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 50), mt);
+        wall21.position.set(-125, 15, 0);
+        var wall22 = new THREE.Mesh(new THREE.BoxGeometry(70, 30, 1), mt);
+        wall22.position.set(-90, 15, -25);
+        var wall23 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 30), mt);
+        wall23.position.set(-55, 15, -40);
+        var wall24 = new THREE.Mesh(new THREE.BoxGeometry(50, 30, 10), mt);
+        wall24.position.set(-30, 15, -60);
+        var wall25 = wall24.clone();
+        wall25.position.set(40, 15, -60);
+        var wall26 = new THREE.Mesh(new THREE.BoxGeometry(50, 30, 1), mt);
+        wall26.position.set(5, 15, -105);
+        var wall27 = new THREE.Mesh(new THREE.BoxGeometry(1, 30, 40), mt);
+        wall27.position.set(-20, 15, -85);
+        var wall28 = wall27.clone();
+        wall28.position.set(30, 15, -85);
+
+        var coaster1 = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 5), mt);
+        coaster1.position.set(43, 30, 40);
+        var coaster2 = new THREE.Mesh(new THREE.BoxGeometry(65, 1, 1), mt);
+        coaster2.position.set(10, 30, 43);
+        var coaster3 = new THREE.Mesh(new THREE.BoxGeometry(35, 1, 1), mt);
+        coaster3.position.set(0, 30, 37);
+        var coaster4 = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 1, 20), mt);
+        coaster4.position.set(-55, 30, 65);
+
+        scene.add(statueBase, statue, wall1, wall2, wall3, wall4, wall5, wall6, wall7, wall8, wall9, wall10, wall11, wall13, wall14, wall15, wall16, wall17, wall18, wall19, wall20, wall21, wall22, wall23, wall24, wall25, wall26, wall27, wall28, coaster1, coaster3, coaster2, coaster4);
+
+        chair();
+
+        drawing();
+      }
+
+      function chair() {
+        var woodTex = new THREE.TextureLoader().load("https://i.imgur.com/DrvlmNW.jpg?1");
+        var mt = new THREE.MeshLambertMaterial({
+          map: woodTex
+        });
+        var mtWhite = new THREE.MeshLambertMaterial({
+          color: 0xe3e3e3,
+        });
+
+        var sit = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 10), mtWhite);
+
+        var leg1 = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 2), mt);
+        leg1.position.set(0, -3, 4);
+        var leg2 = leg1.clone();
+        leg2.position.set(0, -3, -4);
+
+        sit.add(leg1, leg2);
+        sit.position.set(50, 5, 0);
+
+        var sit1 = sit.clone();
+        sit1.position.set(-55, 5, 60);
+        var sit2 = sit.clone();
+        sit2.position.set(-85, 5, 0);
+        var sit3 = sit.clone();
+        sit3.position.set(-105, 5, 0);
+
+        var sit4 = new THREE.Mesh(new THREE.BoxGeometry(10, 3, 5), mtWhite);
+        var leg3 = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 5), mt);
+        var leg4 = leg3.clone();
+
+        leg3.position.set(4, -3, 0);
+        leg4.position.set(-4, -3, 0);
+
+        sit4.add(leg3, leg4);
+        sit4.position.set(20, 5, 7);
+
+        var sit5 = sit4.clone();
+        sit5.position.set(20, 5, -7);
+
+        var sit6 = sit4.clone();
+        sit6.position.set(-20, 5, 7);
+
+        var sit7 = sit4.clone();
+        sit7.position.set(-20, 5, -7);
+
+        var sit8 = sit4.clone();
+        sit8.position.set(5, 5, -85);
+
+        scene.add(sit, sit1, sit2, sit3, sit4, sit5, sit6, sit7, sit8);
+      }
+
+      function drawing() {
+        var mt = new THREE.MeshLambertMaterial({
+          color: "red"
+        });
+        var drawing1 = new THREE.Mesh(new THREE.PlaneGeometry(5, 7), mt);
+        drawing1.rotation.y = -Math.PI / 2;
+        drawing1.position.set(54.4, 17, 40);
+        var drawing2 = drawing1.clone();
+        drawing2.rotation.y = -Math.PI;
+        drawing2.position.set(40, 17, 54.4);
+        var drawing3 = drawing2.clone();
+        drawing3.position.set(20, 17, 54.4);
+        var drawing4 = drawing2.clone();
+        drawing4.position.set(0, 17, 54.4);
+        var drawing5 = drawing2.clone();
+        drawing5.position.set(-20, 17, 54.4);
+        var drawing6 = drawing2.clone();
+        drawing6.rotation.y = Math.PI;
+        drawing6.position.set(10, 17, 25.6);
+        var drawing7 = drawing6.clone();
+        drawing7.position.set(-10, 17, 25.6);
+        var drawing8 = new THREE.Mesh(new THREE.PlaneGeometry(15, 9), new THREE.MeshLambertMaterial({
+          color: 'yellow'
+        }));
+        drawing8.rotation.y = Math.PI / 2;
+        drawing8.position.set(-74.4, 17, 65);
+        var drawing9 = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshLambertMaterial({
+          color: 'green'
+        }));
+        drawing9.position.set(15, 17, -104.4);
+        var drawing10 = new THREE.Mesh(new THREE.PlaneGeometry(16, 9), new THREE.MeshLambertMaterial({
+          color: 'blue'
+        }));
+        drawing10.rotation.y = Math.PI;
+        drawing10.position.set(-110, 17, 24.4);
+        var drawing11 = drawing4.clone();
+        drawing11.position.set(0, 17, 24.4);
+
+        scene.add(drawing1, drawing2, drawing3, drawing4, drawing5, drawing6, drawing7, drawing8, drawing9, drawing10, drawing11);
+
+
+        var light0 = new Light(45, 28, 40, drawing1);
+        var light1 = new Light(40, 28, 45, drawing2);
+        var light2 = new Light(20, 28, 45, drawing3);
+        var light3 = new Light(0, 28, 45, drawing4);
+        var light4 = new Light(-20, 28, 45, drawing5);
+        var light5 = new Light(10, 28, 35, drawing6);
+        var light6 = new Light(-10, 28, 35, drawing7);
+        var light7 = new Light(-60, 28, 65, drawing8);
+        light7.spotLight.angle = Math.PI / 6;
+        var light8 = new Light(15, 28, -95, drawing9);
+        light8.spotLight.angle = Math.PI / 6;
+        var light9 = new Light(-110, 28, 15, drawing10);
+        light9.spotLight.angle = Math.PI / 4;
+        var light10 = new Light(0, 28, 15, drawing11);
+        spotLightHelper = new THREE.SpotLightHelper(light9.spotLight);
+
+
+        lamps.push(light0, light1, light2, light3, light4, light5, light6, light7, light8, light9, light10);
+
+        //scene.add(spotLightHelper);
+        spotLightGroup.add(light0.spotLight, light1.spotLight, light2.spotLight, light3.spotLight, light4.spotLight, light5.spotLight, light6.spotLight, light7.spotLight, light8.spotLight, light9.spotLight, light10.spotLight);
+
+        var lightGroup = new THREE.Group();
+
+        scene.add(lightGroup);
+
+      }
+
+      $('#lightness').change(function() {
+        lightness = $(this).val() / 100;
+        lamps.forEach(function(item) {
+          item.change(lightness)
+        });
+      });
+
+      $("#switchbt").click(function() {
+        lightStatus = !lightStatus;
+
+        if (lightStatus) {
+          scene.add(spotLightGroup);
+          scene.add(pointLight);
+          $("#switchbt").text('open');
+        } else {
+          scene.remove(spotLightGroup);
+          scene.remove(pointLight);
+          $("#switchbt").text('close');
+        }
+      });
+
+      $("#view").change(function() {
+        viewPoint = $('#view option:selected').val();
+      });
+
+    </script>
+  </body>
+
+</html>
