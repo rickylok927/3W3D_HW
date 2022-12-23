@@ -1,0 +1,209 @@
+<html>
+
+  <body>
+
+
+    <h1 style="text-align:center">HW5</h1>
+    <hr>
+
+    <div id="container" style="float:left; margin:3px; width:50vw; height:50vw">
+    </div>
+
+    <div style="float:left; margin:3px">
+      radius:
+      <br>
+      <input id="radius" type="range" max="20" min="5" value="10">
+      <div id="radius_n">10</div>
+      <div id="collision">
+        <font color='white' size='10'>
+		<p>
+          collide!!
+		</p>
+        </font>
+      </div>
+
+      <button id="start" style=" margin:20px;width:20vw; height:5vw">start/pause</button>
+    </div>
+    <script src="https://threejs.org/build/three.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <script>
+      var camera, scene, renderer;
+      var circle, pos, vel;
+      var mouse = new THREE.Vector2();
+      var raycaster = new THREE.Raycaster();
+      var radius = 10;
+      var box;
+	  var boxCoordsMaxX, boxCoordsMaxY, boxCoordsMinX, boxCoordsMinY;
+      var start = true;
+      var item;
+      var touch;
+	  
+      init();
+      animate();
+
+      function getPos() {
+	    //console.log(pos.x + " " +pos.y + " "+radius + " "+boxCoordsMaxX + " "+boxCoordsMaxY + " "+boxCoordsMinX + " "+boxCoordsMinY );
+        // Call api 
+        // Need to be replaced by a public ip address
+        $.get("http://127.0.0.1:1337/api?cx=" + pos.x + "&cy=" + pos.y + "&r=" + radius + "&minX=" + boxCoordsMinX + "&minY=" + boxCoordsMinY + "&maxX=" + boxCoordsMaxX + "&maxY=" + boxCoordsMaxY, function(data) {
+          if (data && data.output) {
+            var touchData = data.output.split(" ");
+			touch = touchData[0];
+			if(touch == 1)
+			  $('p').css({'color':'red'});
+			else
+			  $('p').css({'color':'white'});
+            //disc.position.set(10 * coords[0], 10 * coords[1], 0.0);
+            //console.log (theta + ": " + coords[0] + ", " + coords[1]);
+          }
+        });
+      }
+
+      function init() {
+
+        scene = new THREE.Scene();
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize($('#container').innerWidth(), $('#container').innerHeight());
+        renderer.setClearColor(0x888888);
+        $("#container").append(renderer.domElement);
+
+        camera = new THREE.OrthographicCamera(-100, 100, 100, -100, -10, 100);
+        camera.position.z = 50;
+
+        ////////////////////////////////////////////////////////
+        var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+        gridXZ.rotation.x = Math.PI / 2;
+        scene.add(gridXZ);
+
+        let geometry = new THREE.BufferGeometry();
+        let points = [];
+        points.push(
+          new THREE.Vector3(-80, -80, 0),
+          new THREE.Vector3(80, -80, 0),
+          new THREE.Vector3(80, 80, 0),
+          new THREE.Vector3(-80, 80, 0),
+          new THREE.Vector3(-80, -80, 0));
+        geometry.setFromPoints(points);
+        var border = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+          color: 'blue'
+        }));
+        scene.add(border);
+
+        circle = new THREE.Mesh(new THREE.CircleGeometry(radius, 20, 20), new THREE.MeshBasicMaterial({
+          color: 'yellow'
+        }));
+        scene.add(circle);
+
+        box = new THREE.Mesh(new THREE.PlaneGeometry(40, 20), new THREE.MeshBasicMaterial({
+          color: 'red'
+        }));
+        scene.add(box);
+		boxCoordsMaxX = 20;
+		boxCoordsMaxY = 10;
+		boxCoordsMinX = -20;
+		boxCoordsMinY = -10;
+
+        pos = new THREE.Vector3();
+        vel = new THREE.Vector3(10, 20);
+
+        $('#container').on("pointerdown", onMouseDown);
+        $('#container').on("pointermove", onMouseMove);
+        $('#container').on("pointerup", onMouseUp);
+
+        item = null;
+		
+		setInterval(getPos,100);
+      }
+
+      function animate() {
+        var dt = 0.05;
+        requestAnimationFrame(animate);
+		
+		
+        //getPos();
+        renderer.render(scene, camera);
+
+        if (start)
+          pos.add(vel.clone().multiplyScalar(dt));
+
+        if (pos.x > 100 - radius - 20 || pos.x < -(100 - radius - 20))
+          vel.x *= -1;
+        if (pos.y > 100 - radius - 20 || pos.y < -(100 - radius - 20))
+          vel.y *= -1;
+
+        if (pos.x > 0)
+          circle.material.color.set('cyan');
+        else
+          circle.material.color.set('yellow');
+        circle.geometry = new THREE.CircleGeometry(radius, 20, 20);
+
+        circle.position.copy(pos);
+		//console.log(pos.x + " " + pos.y);
+      }
+
+      function onMouseUp(event) {
+        item = null;
+        box.material.color.set('red');
+		
+      }
+
+      function onMouseDown(event) {
+
+        event.preventDefault();
+
+        var viewportPos = $('#container').get(0).getBoundingClientRect();
+        mouse.x = ((event.clientX - viewportPos.left) / $('#container').innerWidth()) * 2 - 1;
+        mouse.y = -((event.clientY - viewportPos.top) / $('#container').innerHeight()) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObject(box);
+
+        if (intersects.length > 0) {
+          item = intersects[0].object;
+          box.material.color.set('black');
+        }
+		//console.log(pos.x + " " +pos.y + " "+radius + " "+boxCoordsMaxX + " "+boxCoordsMaxY + " "+boxCoordsMinX + " "+boxCoordsMinY );
+		
+      }
+
+      function onMouseMove(event) {
+
+        event.preventDefault();
+
+        var viewportPos = $('#container').get(0).getBoundingClientRect();
+        mouse.x = ((event.clientX - viewportPos.left) / $('#container').innerWidth()) * 2 - 1;
+        mouse.y = -((event.clientY - viewportPos.top) / $('#container').innerHeight()) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObject(box);
+
+        if (intersects.length > 0) {
+          if (item === null) return;
+          if (intersects.length > 0) {
+            item.position.x = intersects[0].point.x;
+            item.position.y = intersects[0].point.y;
+			boxCoordsMaxX = intersects[0].point.x + 20;
+		    boxCoordsMaxY = intersects[0].point.y + 10;
+		    boxCoordsMinX = intersects[0].point.x - 20;
+	    	boxCoordsMinY = intersects[0].point.y - 10;
+          }
+        }
+		
+      }
+
+      $('#radius').change(function() {
+        radius = $(this).val();
+        $('#radius_n').text($(this).val());
+        circle.object.scale.set(radius, 20, 20);
+      });
+
+      $('#start').click(function() {
+        start = !start;
+      });
+
+    </script>
+  </body>
+
+</html>
