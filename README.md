@@ -20,3 +20,7 @@ CGL_HW:
 <br>
 <a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/text2D/min3/main-3.html">text2D</a>
 <br>
+
+other stuff:
+<a href="https://drive.google.com/drive/u/1/folders/1ulkBt7vBSbE6Dk2KLJbd5VewICj9sObk">google drive</a>
+<a href="https://jsfiddle.net/u/u10906251/fiddles/">jsfiddle</a>
