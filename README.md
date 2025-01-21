@@ -24,5 +24,4 @@ CGL_HW:
 other stuff:
 <br>
 <a href="https://drive.google.com/drive/u/1/folders/1ulkBt7vBSbE6Dk2KLJbd5VewICj9sObk">google drive</a>
-<br>
-<a href="https://jsfiddle.net/u/u10906251/fiddles/">jsfiddle</a>
+
