@@ -24,10 +24,10 @@
 
       <button id="start" style=" margin:20px;width:20vw; height:5vw">start/pause</button>
     </div>
-    <script src="https://threejs.org/build/three.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 
-    <script>
+    <script type="module">
+	  import * as THREE from 'https://cdn.skypack.dev/three@0.136';
       var camera, scene, renderer;
       var circle, pos, vel;
       var mouse = new THREE.Vector2();

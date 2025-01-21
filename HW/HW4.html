@@ -48,9 +48,10 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="https://threejs.org/build/three.min.js"></script>
-    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
-    <script>
+
+    <script type="module">
+	  import * as THREE from 'https://cdn.skypack.dev/three@0.136';
+	  import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/OrbitControls.js';
       //fix move
       //fix delete
 
@@ -154,7 +155,7 @@
         var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
         //scene.add(gridXZ);
 
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls = new OrbitControls(camera, renderer.domElement);
         window.addEventListener('resize', onWindowResize, false);
         $('#container').on("pointerdown", onMouseDown);
         $('#container').on("pointermove", onMouseMove);
