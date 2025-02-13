@@ -1,0 +1,220 @@
+<html>
+<head>
+<style>
+#info {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00;
+}
+
+body {
+  overflow: hidden;
+}
+</style>
+</head>
+<body>
+<div id="info">HW4 OBB</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<script type="module">
+import * as THREE from 'https://cdn.skypack.dev/three@0.136';
+import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/OrbitControls.js';
+
+var camera, scene, renderer;
+var allPoints = [];
+var xi = [], //x
+  yi = [],
+  adjX = [], //x'
+  adjY = [],
+  pcaX = [], //x"
+  pcaY = [];
+var minX, maxX, minY, maxY;
+var averageX, averageY, sumX = 0,
+  sumY = 0;
+var line;
+
+init();
+animate();
+
+function init() {
+
+  scene = new THREE.Scene();
+
+  renderer = new THREE.WebGLRenderer();
+  var aspect = window.innerWidth / window.innerHeight // w/h
+  // lanscape: aspect > 1
+  // (portrait): aspect < 1
+  //debugger;
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  //debugger;
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  // aspect > 1
+  // (right-left)/(top-bottom)  = aspect
+  // right-left = (top-bottom)*aspect
+  let top = 100;
+  let bottom = -top;
+  // right-left = (100-(-100))*aspect
+  // therefore: 
+
+  let right = (100 - (-100)) * aspect / 2
+  let left = -right;
+  camera = new THREE.OrthographicCamera(left, right, top, bottom, -10, 10);
+  camera.position.z = 0; // camera at (0,0,0)
+  ////////////////////////////////////////////////////////
+  var gridXZ = new THREE.GridHelper(300, 30, 'red', 'white');
+  scene.add(gridXZ);
+  gridXZ.rotation.x = Math.PI / 2;
+
+  window.addEventListener('resize', onWindowResize, false);
+  window.addEventListener('pointerdown', onMouseDown, false);
+
+}
+
+function onMouseDown(event) {
+
+  scene.remove(line);
+  event.preventDefault();
+  let mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+  let mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+  let aspect = (window.innerWidth / window.innerHeight) * 100;
+  //console.log(mouseX);
+  // [mouseX, mouseY] in [-1,1]x[-1,1]
+  var dot = new THREE.Mesh(new THREE.CircleGeometry(2, 12), new THREE.MeshBasicMaterial({
+    color: 'cyan'
+  }));
+  scene.add(dot);
+  dot.position.set(mouseX * aspect, mouseY * 100, 0);
+
+  var point = new THREE.Vector3(mouseX * aspect, mouseY * 100, 0);
+  allPoints.push(point);
+  xi.push(mouseX * aspect);
+  yi.push(mouseY * 100);
+
+  //console.log(xi);
+  //1.
+  sumX += mouseX * aspect;
+  sumY += mouseY * 100;
+  averageX = sumX / allPoints.length;
+  averageY = sumY / allPoints.length;
+
+  console.log('averageX = ' + averageX + ' averageY = ' + averageY);
+
+  let c11 = 0,
+    c12 = 0,
+    c21 = 0,
+    c22 = 0;
+  adjX.length = 0;
+  adjY.length = 0;
+  for (let i = 0; i < allPoints.length; i++) {
+    //2.
+    adjX[i] = xi[i] - averageX;
+    adjY[i] = yi[i] - averageY;
+    c11 += adjX[i] * adjX[i];
+    c12 += adjX[i] * adjY[i];
+    c21 += adjY[i] * adjX[i];
+    c22 += adjY[i] * adjY[i];
+  }
+
+  console.log('adjX = ' + adjX + ' adjY = ' + adjY);
+
+  c11 /= allPoints.length;
+  c12 /= allPoints.length;
+  c21 /= allPoints.length;
+  c22 /= allPoints.length;
+
+  //3.
+  let c = [
+    [c11, c12],
+    [c21, c22]
+  ];
+
+  console.log('c = [' + c[0] + ']');
+  console.log('    [' + c[1] + ']');
+
+  let ev = numeric.eig(c);
+
+  //4,5,6
+  let PC1 = ev.E.x[0];
+  let PC2 = ev.E.x[1];
+  console.log('PC1 = [' + PC1 + ']');
+  console.log('PC2 = [' + PC2 + ']');
+  minX = maxX = PC1[0] * adjX[0] + PC1[1] * adjY[0];
+  minY = maxY = PC2[0] * adjX[0] + PC2[1] * adjY[0];
+  for (let i = 0; i < allPoints.length; i++) {
+    pcaX[i] = PC1[0] * adjX[i] + PC1[1] * adjY[i];
+    pcaY[i] = PC2[0] * adjX[i] + PC2[1] * adjY[i];
+
+    //7.
+    if (maxX < pcaX[i]) maxX = pcaX[i];
+    if (minX > pcaX[i]) minX = pcaX[i];
+    if (maxY < pcaY[i]) maxY = pcaY[i];
+    if (minY > pcaY[i]) minY = pcaY[i];
+  }
+  console.log('maxX = ' + maxX + ',' + ' minX = ' + minX);
+  console.log('maxY = ' + maxY + ',' + ' minY = ' + minY);
+
+  //8.
+  let cornerX1, cornerX2, cornerX3, cornerX4;
+  let cornerY1, cornerY2, cornerY3, cornerY4;
+  cornerX1 = maxX * PC1[0] + maxY * PC2[0] + averageX;
+  cornerY1 = maxX * PC1[1] + maxY * PC2[1] + averageY;
+  cornerX2 = maxX * PC1[0] + minY * PC2[0] + averageX;
+  cornerY2 = maxX * PC1[1] + minY * PC2[1] + averageY;
+  cornerX3 = minX * PC1[0] + minY * PC2[0] + averageX;
+  cornerY3 = minX * PC1[1] + minY * PC2[1] + averageY;
+  cornerX4 = minX * PC1[0] + maxY * PC2[0] + averageX;
+  cornerY4 = minX * PC1[1] + maxY * PC2[1] + averageY;
+  
+  var pointDown1 = new THREE.Vector2(cornerX1, cornerY1);
+  var pointDown2 = new THREE.Vector2(cornerX2, cornerY2);
+  var pointDown3 = new THREE.Vector2(cornerX3, cornerY3);
+  var pointDown4 = new THREE.Vector2(cornerX4, cornerY4);
+  console.log('corner1 = '+cornerX1+','+ cornerY1);
+  console.log('corner2 = '+cornerX2+','+ cornerY2);
+  console.log('corner3 = '+cornerX3+','+ cornerY3);
+  console.log('corner4 = '+cornerX4+','+ cornerY4);
+
+  //9.
+  if (allPoints.length > 3) {
+    var points = [];
+    points.push(pointDown1, pointDown2, pointDown3, pointDown4, pointDown1);
+    var lines = new THREE.BufferGeometry().setFromPoints(points);
+    line = new THREE.Line(lines, new THREE.LineBasicMaterial({
+      color: 'red'
+    }));
+
+    scene.add(line);
+  }
+  console.log('=================================================');
+}
+
+function onWindowResize() {
+  let aspect = window.innerWidth / window.innerHeight;
+
+  //let top = 100;
+  //let bottom = -top;  
+  camera.right = (100 - (-100)) * aspect / 2
+  camera.left = -camera.right;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animate() {
+
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+
+}
+
+</script>
+</body>
+</html>

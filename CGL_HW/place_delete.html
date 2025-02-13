@@ -1,0 +1,206 @@
+<html>
+<head>
+<style>
+#container {
+  width: 60vw;
+  height: 60vw;
+  float: left;
+  background-color: pink;
+  margin: 10px;
+}
+
+p {
+  margin: 10px;
+  text-align: justify;
+}
+
+</style>
+</head>
+
+<body>
+<h1 style="font-size:2em; text-align:center; margin:15px">
+  Place, Delete
+</h1>
+
+<hr>
+
+<div id="container"></div>
+
+<div style="width:30vw;float:left; margin:10px;background-color:yellow">
+  <input type=radio class='gclass' id='placing' name='g' value='place' checked> Place <br>
+  <input type=radio class='gclass' name='g' value='delete'> Delete<br>
+  <p id='debugMsg'>
+  </p>
+</div>
+
+<script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<script type="module">
+import * as THREE from 'https://cdn.skypack.dev/three@0.136';
+import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/OrbitControls.js';
+
+$('.gclass').click(function() {
+  if ($(this).val() === 'place')
+    placing = true;
+  else // delete
+    placing = false;
+});
+
+
+var scene, renderer, camera;
+var plane;
+var puck, thePuck;
+var mouse = new THREE.Vector2();
+var raycaster = new THREE.Raycaster();
+var placing = true;
+var pucks = [];
+var keyboard = new KeyboardState();
+var isSpacePressed = false;
+
+init();
+animate();
+
+function init() {
+
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+  var ww = $('#container').innerWidth();
+  var hh = $('#container').innerHeight();
+  renderer.setSize(ww, hh);
+  renderer.setClearColor(0x555555);
+  $('#container').append(renderer.domElement);
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(45, ww / hh, 1, 10000);
+  camera.position.set(0, 80, 200);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+
+  var cyl_geom = new THREE.CylinderGeometry(10, 10, 6, 32);
+  var cyl_mat = new THREE.MeshNormalMaterial();
+  puck = new THREE.Mesh(cyl_geom, cyl_mat);
+
+  let controls = new OrbitControls(camera, renderer.domElement);
+
+  var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+  scene.add(gridXZ);
+
+  // build an invisible plane, overlapping the grid
+  plane = new THREE.Mesh(
+    new THREE.PlaneBufferGeometry(200, 200, 8, 8),
+    new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      opacity: 0.25,
+      transparent: true
+    }));
+  plane.rotation.x = -Math.PI / 2;
+  plane.material.visible = true; // invisible, for picking only
+  scene.add(plane);
+
+  window.addEventListener('resize', onWindowResize, false);
+  $('#container').on("pointerdown", onMouseDown);
+  $('#container').on("pointerup", onMouseUp);
+  
+  initKeyboardListeners();
+  
+
+}
+
+function onWindowResize() {
+  var ww = $('#container').innerWidth();
+  var hh = $('#container').innerHeight();
+  camera.aspect = ww / hh;
+  camera.updateProjectionMatrix();
+  renderer.setSize(ww, hh);
+}
+
+function initKeyboardListeners() {
+  window.addEventListener("keydown", (event) => {
+    if (event.code === "Space") {
+      isSpacePressed = true;
+    }
+  });
+
+  window.addEventListener("keyup", (event) => {
+    if (event.code === "Space") {
+      isSpacePressed = false;
+    }
+  });
+}
+
+function onMouseDown(event) {
+	keyboard.update();
+  
+  var viewportPos = $('#container').get(0).getBoundingClientRect();
+  mouse.x = ((event.clientX - viewportPos.left) / $('#container').innerWidth()) * 2 - 1;
+  mouse.y = -((event.clientY - viewportPos.top) / $('#container').innerHeight()) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+	if(isSpacePressed){
+    if (placing === true) { // place
+      var intersects = raycaster.intersectObject(plane);
+      if (intersects.length > 0) {
+        var newPuck = puck.clone();
+        newPuck.position.copy(intersects[0].point);
+        scene.add(newPuck);
+        pucks.push(newPuck);
+      }
+    } else { // delete
+      var intersects = raycaster.intersectObjects(pucks);
+      if (intersects.length > 0) {
+        thePuck = intersects[0].object;
+
+        //scene.remove(thePuck);
+        thePuck.removeFromParent();
+
+        // remove thePuck from pucks
+        for (let i = 0; i < pucks.length; i++) {
+          if (pucks[i] === thePuck) {
+            pucks.splice(i, 1);
+            break;
+          }
+        }
+
+      }
+
+    }
+  }
+
+}
+
+function onMouseUp(event) {
+
+  if (pucks.length === 0) {
+    placing = true;
+    $('#placing').prop('checked', true);
+    // https://stackoverflow.com/questions/15044340/jquery-set-checkbox-checked
+  }
+  
+  $('#debugMsg').text(pucks.length + ' pucks on plane');
+
+}
+
+function onKeyDown(event){
+	keyboard.update();
+	
+  if(keyboard.down("space")){
+  	onMouseDown();
+  }
+  	
+}
+function animate() {
+  
+  requestAnimationFrame(animate);
+  render();
+
+}
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+</script>
+</body>
