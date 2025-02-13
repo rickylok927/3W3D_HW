@@ -28,6 +28,7 @@ import * as THREE from 'https://cdn.skypack.dev/three@0.136';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136/examples/jsm/controls/OrbitControls.js';
     
 var camera, scene, renderer;
+var controls;
 var angle = 0;
 var train;
 var movebt = false,
@@ -51,7 +52,7 @@ function init() {
   camera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
   camera.position.set(100, 20, 0);
 
-  let controls = new OrbitControls(camera, renderer.domElement);
+  controls = new OrbitControls(camera, renderer.domElement);
 
   let grid = new THREE.GridHelper(200, 20, 'red', 'white');
   scene.add(grid);
@@ -157,6 +158,16 @@ $("#move").click(function() {
 
 $("#view").click(function() {
   viewbt = !viewbt;
+  if(viewbt == true){
+	controls.enableRotate = false;
+	controls.enablePan = false;
+	controls.enableZoom = false;
+  }
+  else{
+	controls.enableRotate = true;
+	controls.enablePan = true;
+	controls.enableZoom = true;
+  }
 });
 
 
