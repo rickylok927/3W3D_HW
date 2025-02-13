@@ -24,7 +24,7 @@ CGL_HW:
 <br>
 <a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/OBB.html">OBB</a>
 <br>
-<a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/running_train.html">Running traina</a>
+
 <br>
 <a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/sprite.html">Sprite</a>
 <br>
