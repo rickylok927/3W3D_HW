@@ -8,15 +8,15 @@ Status: ✓Done ✕Not Submit
 <br>
 ✓ <a href="https://rickylok927.github.io/3W3D_HW/HW/HW2.html">HTML Input & Vector3 API</a>
 <br>
-✓ <a href="https://rickylok927.github.io/3W3D_HW/HW/HW3.html">gallery</a>
+✓ <a href="https://rickylok927.github.io/3W3D_HW/HW/HW3.html">Gallery</a>
 <br>
 ✓ <a href="https://rickylok927.github.io/3W3D_HW/HW/HW5/HW5.html">Nodejs</a>
 
 CGL_HW:
 <br>
-<a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/module_keyframe/main.html">keyframe(module)</a>
+<a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/module_keyframe/main.html">Keyframe(module)</a>
 <br>
-<a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/text2D/min3/main-3.html">text2D</a>
+<a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/text2D/min3/main-3.html">Text2D</a>
 <br>
 <a href="https://rickylok927.github.io/3W3D_HW/CGL_HW/car.html">Car controlling</a>
 <br>
@@ -32,5 +32,5 @@ CGL_HW:
 <br>
 other stuff:
 <br>
-<a href="https://drive.google.com/drive/u/1/folders/1ulkBt7vBSbE6Dk2KLJbd5VewICj9sObk">google drive</a>
+<a href="https://drive.google.com/drive/u/1/folders/1ulkBt7vBSbE6Dk2KLJbd5VewICj9sObk">Google drive</a>
 
